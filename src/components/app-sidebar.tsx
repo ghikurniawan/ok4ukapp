@@ -3,15 +3,13 @@
 import * as React from "react"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
-  Settings2,
   SquareTerminal,
+  Award
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,7 +29,7 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/ok4uk-logo.svg",
   },
   teams: [
     {
@@ -52,14 +50,14 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Certificate",
       url: "#",
-      icon: SquareTerminal,
+      icon: Award,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Create",
+          url: "/certificate",
         },
       ],
     },
