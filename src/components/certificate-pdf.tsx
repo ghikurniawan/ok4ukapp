@@ -1,11 +1,18 @@
-import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from '@react-pdf/renderer';
 
-// Ganti dengan path/logo kamu
+// Ganti jika watermark/logo kamu beda
 const watermark = '/ok4uk-logo.svg'; // Pastikan ini file Base64 atau public URL
 
 const styles = StyleSheet.create({
   page: {
-    width: 842,
+    width: 842, // A4 Landscape
     height: 595,
     padding: 30,
     position: 'relative',
@@ -71,9 +78,29 @@ const styles = StyleSheet.create({
     width: 200,
     marginHorizontal: 'auto',
   },
+  qrCodeContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    width: 80,
+    height: 80,
+  },
 });
 
-export function CertificatePDF({ data }: { data: any }) {
+interface CertificatePDFProps {
+  data: {
+    fullName: string;
+    nvqLevel: string;
+    unitTitle: string;
+    issuedDate: string;
+    certificateId: string;
+    assessorName: string;
+    trainingCenter: string;
+  };
+  qrCodeBase64: string;
+}
+
+export function CertificatePDF({ data, qrCodeBase64 }: CertificatePDFProps) {
   return (
     <Document>
       <Page size={[842, 595]} style={styles.page}>
@@ -83,13 +110,13 @@ export function CertificatePDF({ data }: { data: any }) {
         {/* Watermark */}
         <Image src={watermark} style={styles.watermark} />
 
-        {/* Isi sertifikat */}
+        {/* Isi Sertifikat */}
         <View style={styles.content}>
           <Text style={styles.title}>OK4UK Academy</Text>
           <Text style={styles.subtitle}>Certificate of Achievement</Text>
 
           <Text>This is to certify that</Text>
-          <Text style={styles.name}>{data.fullName}</Text>
+          <Text style={styles.name}>{data.fullName || 'Full Name'}</Text>
 
           <Text>has successfully completed</Text>
           <Text style={styles.qualification}>
@@ -97,8 +124,12 @@ export function CertificatePDF({ data }: { data: any }) {
           </Text>
 
           <Text style={{ marginTop: 20 }}>Issued on: {data.issuedDate}</Text>
+          <Text style={{ marginTop: 5, fontSize: 10 }}>
+            Certificate ID: {data.certificateId}
+          </Text>
         </View>
 
+        {/* Footer */}
         <View style={styles.footer}>
           <View style={styles.signature}>
             <View style={styles.line} />
@@ -111,6 +142,13 @@ export function CertificatePDF({ data }: { data: any }) {
             <Text>{data.trainingCenter}</Text>
           </View>
         </View>
+
+        {/* QR Code */}
+        {qrCodeBase64 && (
+          <View style={styles.qrCodeContainer}>
+            <Image src={qrCodeBase64} style={{ width: 80, height: 80 }} />
+          </View>
+        )}
       </Page>
     </Document>
   );

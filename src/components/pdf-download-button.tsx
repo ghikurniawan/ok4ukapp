@@ -16,7 +16,7 @@ export default function PDFDownloadButton({ data }: { data: any }) {
   if (!isClient) return null;
   return (
     <PDFDownloadLink
-      document={<CertificatePDF data={data} />}
+      document={<CertificatePDF data={data} qrCodeBase64={''} />}
       fileName={`${data.fullName || 'NVQ-Certificate'}.pdf`}
     >
       {({ loading }) =>
