@@ -1,27 +1,40 @@
 'use client';
 
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { LogOut } from "lucide-react"
-import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
+import { LogOut } from "lucide-react";
+import { useTransition } from "react";
 
 export function SiteHeader() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleSignOut = async () => {
+    await authClient.signOut(); // pastikan ini sudah menghapus cookie/session
+    // gunakan transition untuk hindari race condition
+    startTransition(() => {
+      router.push("/login");
+    });
+  };
+
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+    <header className="flex h-[var(--header-height)] shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-[var(--header-height)]">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">Documents</h1>
+        <h1 className="text-base font-medium">Dashboard</h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button onClick={() => signOut({ callbackUrl: '/' })} variant="ghost" size="sm" className="cursor-pointer">
-             <LogOut /> <span className="hidden sm:block">Logout</span>
+          <Button onClick={handleSignOut} variant="ghost" size="sm" className="cursor-pointer">
+            <LogOut /> <span className="hidden sm:block">{isPending ? "Signing out..." : "Sign Out"}</span>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

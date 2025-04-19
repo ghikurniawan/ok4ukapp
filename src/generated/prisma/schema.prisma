@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  password      String?
+  name          String?
+  role          UserRole      @default(STUDENT)
+  image         String?
+  emailVerified Boolean
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  certificates  Certificate[] // sebagai penerima sertifikat
+  issued        Certificate[] @relation("IssuedCertificates") // sebagai penerbit
+  accessor      Accessor?     @relation(fields: [accessorId], references: [id])
+  accessorId    String?
+
+  @@map("user")
+}
+
+enum UserRole {
+  STUDENT
+  ISSUER
+  ADMIN
+}
+
+model Accessor {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  organization String?
+  phone        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  courses      Course[]
+  certificates Certificate[]
+  users        User[]
+
+  @@map("accessor")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Course {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  accessor     Accessor?     @relation(fields: [accessorId], references: [id])
+  accessorId   String?
+  certificates Certificate[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("course")
+}
+
+model Certificate {
+  id            String    @id @default(cuid())
+  certificateId String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  course        Course    @relation(fields: [courseId], references: [id])
+  courseId      String
+  issuer        User      @relation("IssuedCertificates", fields: [issuerId], references: [id])
+  issuerId      String
+  accessor      Accessor? @relation(fields: [accessorId], references: [id])
+  accessorId    String?
+  issuedDate    DateTime
+  expiryDate    DateTime?
+  validated     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@map("certificate")
+}

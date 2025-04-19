@@ -3,12 +3,21 @@ import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 
 import data from "./data.json"
-import { auth } from "@/auth/lib"
-import { redirect } from "next/navigation"
+
+import prisma from "@/lib/prisma"
+import { CertificateTable } from "@/components/certificate-table"
 
 export default async function DashboardPage() {
-  const session = await auth()
-  if (!session) redirect('/login')
+  
+    const certificates = await prisma.certificate.findMany({
+      include: {
+        user: true,
+        accessor: true,
+      },
+      orderBy: {
+        issuedDate: "desc",
+      },
+    });
   return (
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -18,6 +27,7 @@ export default async function DashboardPage() {
                 <ChartAreaInteractive />
               </div>
               <DataTable data={data} />
+              <CertificateTable data={certificates} />
             </div>
           </div>
         </div>
